@@ -23,13 +23,41 @@
       transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
     }
-    #loaderSvg {
-      width: min(720px, 86vw);
-      overflow: visible;
+    #loaderContent {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
     }
-    #loaderText {
-      stroke-dasharray: 3800;
-      stroke-dashoffset: 3800;
+    #loaderTextSmall {
+      font-family: 'Kumbh Sans', sans-serif;
+      font-size: 20px; font-weight: 400;
+      letter-spacing: 0.125em;
+      color: rgba(242,242,242,0.55);
+      opacity: 0; transition: opacity 0.6s ease;
+      margin: 0;
+    }
+    #loaderWordStage {
+      position: relative; height: clamp(60px, 13.5vw, 122px);
+      display: flex; align-items: center; justify-content: center;
+      perspective: 900px;
+      min-width: min(720px, 86vw);
+    }
+    .loader-phrase {
+      position: absolute;
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(52px, 13.5vw, 122px); font-weight: 800;
+      letter-spacing: -3px;
+      display: inline-block;
+      transform-style: preserve-3d;
+      white-space: nowrap; line-height: 1;
+    }
+    .loader-unit {
+      display: inline-block;
+      backface-visibility: hidden;
+      transform-origin: 50% 55%;
+      white-space: pre;
+      will-change: transform, opacity, filter;
+      color: rgba(30,30,30,0);
+      -webkit-text-stroke: 1.2px rgba(242,242,242,0.30);
+      paint-order: stroke fill;
     }
     #loaderBar {
       width: min(220px, 50vw); height: 1px;
@@ -41,7 +69,7 @@
       position: absolute; left: 0; top: 0; bottom: 0;
       width: 0%;
       background: rgba(255,255,255,0.55);
-      transition: width 2.2s cubic-bezier(0.4, 0, 0.6, 1);
+      transition: width 3s cubic-bezier(0.4, 0, 0.6, 1);
     }
 
     /* Keep page invisible until loader exits */
@@ -83,7 +111,7 @@
     /* ── NAV (always dark) ── */
     nav {
       position: sticky; top: 0; z-index: 200;
-      padding: 12px clamp(20px, 4vw, 44px);
+      padding: 16px clamp(20px, 4vw, 44px) 12px;
       background: transparent;
       pointer-events: none;
       display: flex; justify-content: center;
@@ -121,15 +149,32 @@
     }
     .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.06); }
     .nav-link.active { color: var(--text); }
+    .nav-resume-wrap {
+      display: flex; align-items: center;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 100px;
+      flex-shrink: 0;
+      transition: border-color 0.2s;
+    }
+    .nav-resume-wrap:hover { border-color: rgba(255,255,255,0.50); }
     .nav-resume {
       font-size: 13px; font-weight: 500;
       background: transparent; color: var(--text);
-      border: 1px solid rgba(255,255,255,0.22);
-      border-radius: 100px; padding: 7px 16px;
-      transition: border-color 0.2s, color 0.2s;
+      padding: 7px 12px 7px 16px;
+      transition: color 0.2s;
+    }
+    .nav-resume-dl {
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.55);
+      padding: 7px 12px 7px 6px;
+      transition: color 0.2s;
+    }
+    .nav-resume-dl:hover { color: var(--text); }
+    .nav-resume-divider {
+      width: 1px; height: 14px;
+      background: rgba(255,255,255,0.15);
       flex-shrink: 0;
     }
-    .nav-resume:hover { border-color: rgba(255,255,255,0.50); color: var(--text); }
     @media (max-width: 660px) {
       .nav-links { display: none; }
       .nav-divider { display: none; }
@@ -448,13 +493,54 @@
       .cards-grid { grid-template-columns: 1fr; }
       .blogs-grid { grid-template-columns: 1fr; }
       .operate-item { grid-template-columns: 36px 1fr; }
+      .hero-mini-cards { flex-direction: column; }
+      .hero-mini-cards .mini-card { flex: unset; }
     }
+    /* ── HERO ENTRY ── */
+    nav {
+      transform: translateY(-8px);
+      transition: opacity 0.8s ease, transform 0.8s var(--ease-out);
+    }
+    body.page-ready nav { transform: none; transition-delay: 2s; }
+
+    .hero-photo {
+      opacity: 0; transform: translateY(20px);
+      transition: opacity 1.1s var(--ease-out), transform 1.2s var(--ease-out);
+    }
+    .hero-greeting {
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 1.0s var(--ease-out), transform 1.0s var(--ease-out);
+    }
+    .hero-name {
+      opacity: 0; transform: translateY(14px);
+      transition: opacity 1.1s var(--ease-out), transform 1.1s var(--ease-out);
+    }
+    .hero-bio {
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 1.0s var(--ease-out), transform 1.0s var(--ease-out);
+    }
+    .hero-mini-cards .mini-card {
+      opacity: 0; transform: translateY(10px);
+      transition: border-color 0.2s, background 0.2s,
+                  opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out);
+    }
+
+    .hero-entered .hero-photo    { opacity: 1; transform: none; }
+    .hero-entered .hero-greeting { opacity: 1; transform: none; transition-delay: 200ms; }
+    .hero-entered .hero-name     { opacity: 1; transform: none; transition-delay: 400ms; }
+    .hero-entered .hero-bio      { opacity: 1; transform: none; transition-delay: 650ms; }
+    .hero-entered .mini-card:nth-child(1) { opacity: 1; transform: none; transition-delay: 900ms; }
+    .hero-entered .mini-card:nth-child(2) { opacity: 1; transform: none; transition-delay: 1050ms; }
+    .hero-entered .mini-card:nth-child(3) { opacity: 1; transform: none; transition-delay: 1200ms; }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
       .reveal { opacity: 1 !important; transform: none !important; }
       .hero-name .word { opacity: 1 !important; transform: none !important; }
       .ticker-track { animation: none; }
       .card { transform: none !important; opacity: 1 !important; }
+      .hero-photo, .hero-greeting, .hero-name, .hero-bio,
+      .hero-mini-cards .mini-card { opacity: 1 !important; transform: none !important; }
     }
   </style>
 </head>
@@ -462,29 +548,10 @@
 
   <!-- LOADER -->
   <div id="loader">
-    <svg id="loaderSvg" viewBox="0 0 740 195" xmlns="http://www.w3.org/2000/svg">
-      <text id="loaderTextSmall"
-            x="50%" y="50"
-            text-anchor="middle"
-            font-family="'Kumbh Sans', sans-serif"
-            font-size="24"
-            font-weight="400"
-            letter-spacing="3"
-            fill="rgba(242,242,242,0.55)"
-            fill-opacity="0">Designing for</text>
-      <text id="loaderText"
-            x="50%" y="180"
-            text-anchor="middle"
-            font-family="Syne, sans-serif"
-            font-size="134"
-            font-weight="800"
-            letter-spacing="-3"
-            fill="#1e1e1e"
-            fill-opacity="0"
-            stroke="rgba(242,242,242,0.30)"
-            stroke-width="1.2"
-            paint-order="stroke fill">CLARITY</text>
-    </svg>
+    <div id="loaderContent">
+      <p id="loaderTextSmall">Designing for</p>
+      <div id="loaderWordStage"></div>
+    </div>
     <div id="loaderBar"><div id="loaderBarFill"></div></div>
   </div>
 
@@ -498,7 +565,15 @@
         <a href="#sec-operate" class="nav-link">How I Operate</a>
         <a href="#sec-blogs" class="nav-link">Blogs</a>
       </div>
-      <a href="https://framerusercontent.com/assets/cb2JL1EEogOVjReRCWE7v4es1JE.pdf" target="_blank" rel="noopener" class="nav-resume">Download Resume</a>
+      <div class="nav-resume-wrap">
+        <a href="resume.pdf" target="_blank" rel="noopener" class="nav-resume">Resume</a>
+        <span class="nav-resume-divider"></span>
+        <a href="resume.pdf" download="Resume-Mehul-Jatiya.pdf" class="nav-resume-dl" title="Download">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6.5 1v7.5M6.5 8.5l-3-3m3 3 3-3M1 11.5h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
     </div>
   </nav>
 
@@ -779,45 +854,97 @@
     window.scrollTo(0, 0);
 
     (function runLoader() {
-      const loader     = document.getElementById('loader');
-      const text       = document.getElementById('loaderText');
-      const textSmall  = document.getElementById('loaderTextSmall');
-      const barFill    = document.getElementById('loaderBarFill');
+      const loader    = document.getElementById('loader');
+      const textSmall = document.getElementById('loaderTextSmall');
+      const stage     = document.getElementById('loaderWordStage');
+      const barFill   = document.getElementById('loaderBarFill');
 
-      function start() {
-        const ease = 'cubic-bezier(0.4, 0, 0.3, 1)';
+      const WORDS         = ['CLARITY', 'SYSTEMS', 'IMPACT'];
+      const ENTER_DUR     = 400;
+      const ENTER_STAGGER = 12;
+      const EXIT_DUR      = 280;
+      const EXIT_STAGGER  = 8;
+      const Y_TRAVEL      = 9.3;
+      const BLUR          = 12;
+      const HOLD          = 220;
+      const GAP           = 50;
+      const MICRO_DELAY   = 0;
+      const FILL_DUR      = 350;
+      const ENTER_EASE    = 'cubic-bezier(0.22, 1, 0.36, 1)';
+      const EXIT_EASE     = 'cubic-bezier(0.64, 0, 0.78, 0)';
 
-        /* kick the progress bar */
-        requestAnimationFrame(() => { barFill.style.width = '100%'; });
+      function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-        /* PHASE 1: "Designing for" fades in as solid text */
-        requestAnimationFrame(() => {
-          textSmall.style.transition  = 'fill-opacity 0.6s ease';
-          textSmall.style.fillOpacity = '1';
+      function createPhrase(word) {
+        const phrase = document.createElement('div');
+        phrase.className = 'loader-phrase';
+        Array.from(word).forEach(char => {
+          const span = document.createElement('span');
+          span.className = 'loader-unit';
+          span.textContent = char;
+          phrase.appendChild(span);
         });
-
-        /* PHASE 2: CLARITY stroke draws */
-        setTimeout(() => {
-          text.style.transition       = `stroke-dashoffset 1.8s ${ease}`;
-          text.style.strokeDashoffset = '0';
-        }, 500);
-
-        /* PHASE 3: CLARITY fill reveals */
-        setTimeout(() => {
-          text.style.transition  = 'fill-opacity 0.5s ease';
-          text.style.fillOpacity = '1';
-        }, 2500);
-
-        /* exit: fade loader, reveal page */
-        setTimeout(() => {
-          loader.classList.add('exit');
-          document.body.classList.replace('loading', 'page-ready');
-        }, 3500);
-
-        setTimeout(() => { loader.remove(); }, 4200);
+        return phrase;
       }
 
-      /* wait for Syne to render before animating */
+      function animateUnits(phrase, enterDir) {
+        const units = Array.from(phrase.querySelectorAll('.loader-unit'));
+        const dur     = enterDir ? ENTER_DUR     : EXIT_DUR;
+        const stagger = enterDir ? ENTER_STAGGER : EXIT_STAGGER;
+        const easing  = enterDir ? ENTER_EASE    : EXIT_EASE;
+        const from = enterDir
+          ? { opacity: 0, transform: `translate3d(0,${Y_TRAVEL}px,0)`,  filter: `blur(${BLUR}px)` }
+          : { opacity: 1, transform: 'translate3d(0,0,0)',               filter: 'blur(0px)' };
+        const to = enterDir
+          ? { opacity: 1, transform: 'translate3d(0,0,0)',               filter: 'blur(0px)' }
+          : { opacity: 0, transform: `translate3d(0,${-Y_TRAVEL}px,0)`, filter: `blur(${BLUR}px)` };
+        const promises = units.map((unit, i) =>
+          unit.animate([from, to], { duration: dur, delay: i * stagger, easing, fill: 'both' }).finished
+        );
+        return Promise.all(promises);
+      }
+
+      function fillPhrase(phrase) {
+        const units = Array.from(phrase.querySelectorAll('.loader-unit'));
+        const promises = units.map((unit, i) =>
+          unit.animate(
+            [{ color: 'rgba(30,30,30,0)' }, { color: 'rgba(30,30,30,1)' }],
+            { duration: FILL_DUR, delay: i * 4, easing: 'ease-in', fill: 'forwards' }
+          ).finished
+        );
+        return Promise.all(promises);
+      }
+
+      async function start() {
+        requestAnimationFrame(() => { textSmall.style.opacity = '1'; });
+        requestAnimationFrame(() => { barFill.style.width = '100%'; });
+
+        /* initial enter */
+        let current = createPhrase(WORDS[0]);
+        stage.appendChild(current);
+        await animateUnits(current, true);
+
+        /* cycle through remaining words */
+        for (let i = 1; i < WORDS.length; i++) {
+          await Promise.all([fillPhrase(current), sleep(HOLD)]);
+          const next = createPhrase(WORDS[i]);
+          await animateUnits(current, false);
+          await sleep(MICRO_DELAY);
+          stage.innerHTML = '';
+          stage.appendChild(next);
+          current = next;
+          await animateUnits(current, true);
+          await sleep(GAP);
+        }
+
+        /* hold last word with fill, then exit */
+        await Promise.all([fillPhrase(current), sleep(HOLD)]);
+        loader.classList.add('exit');
+        document.body.classList.replace('loading', 'page-ready');
+        document.querySelector('.hero').classList.add('hero-entered');
+        setTimeout(() => { loader.remove(); }, 700);
+      }
+
       document.fonts.ready.then(start);
     })();
 
