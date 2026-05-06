@@ -849,11 +849,18 @@
 
   <script>
     /* ── LOADER ── */
-    document.body.classList.add('loading');
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
 
     (function runLoader() {
+      if (sessionStorage.getItem('loaderSeen')) {
+        document.getElementById('loader').remove();
+        document.body.classList.add('page-ready');
+        document.querySelector('.hero') && document.querySelector('.hero').classList.add('hero-entered');
+        return;
+      }
+      sessionStorage.setItem('loaderSeen', '1');
+      document.body.classList.add('loading');
       const loader    = document.getElementById('loader');
       const textSmall = document.getElementById('loaderTextSmall');
       const stage     = document.getElementById('loaderWordStage');
