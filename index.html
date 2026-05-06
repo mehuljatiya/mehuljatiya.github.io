@@ -562,7 +562,6 @@
       <div class="nav-divider"></div>
       <div class="nav-links">
         <a href="#sec-work" class="nav-link">Work</a>
-        <a href="#sec-operate" class="nav-link">How I Operate</a>
         <a href="#sec-blogs" class="nav-link">Blogs</a>
       </div>
       <div class="nav-resume-wrap">
@@ -789,7 +788,7 @@
   </div>
   </div>
 
-  <!-- OPERATE -->
+  <!-- OPERATE (commented out — revisit later)
   <div class="wrap" id="sec-operate" style="padding-top: 40px;">
     <div class="section-label reveal">How I Operate</div>
     <section class="operate-section">
@@ -803,6 +802,7 @@
       </ul>
     </section>
   </div>
+  -->
 
   <!-- BLOGS -->
   <div class="wrap" id="sec-blogs" style="padding-top: 40px;">
@@ -1005,7 +1005,7 @@
       });
 
       const navLinks = document.querySelectorAll('.nav-link');
-      const secIds = ['sec-work', 'sec-operate', 'sec-blogs'];
+      const secIds = ['sec-work', 'sec-blogs'];
       const secObs = new IntersectionObserver(entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
