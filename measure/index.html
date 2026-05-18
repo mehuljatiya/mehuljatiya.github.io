@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>/measure — Claude Code slash command</title>
+  <script>
+    (function(){ var t = localStorage.getItem('measure-theme') || 'dark'; document.documentElement.dataset.theme = t; })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html[data-theme="dark"] {
+      --bg:        oklch(11% 0.012 60);
+      --bg-raised: oklch(14% 0.012 60);
+      --bg-subtle: oklch(16% 0.010 60);
+      --bg-alt:    oklch(12.5% 0.010 60);
+      --border:    oklch(22% 0.010 60);
+      --text:      oklch(92% 0.012 80);
+      --muted:     oklch(58% 0.010 70);
+      --accent:    oklch(76% 0.14 200);
+      --accent-dim:oklch(60% 0.10 200);
+      --code-bg:   oklch(13% 0.008 60);
+      --nav-rgba:  rgba(17, 14, 11, 0.9);
+      --modal-shadow: rgba(0, 0, 0, 0.6);
+      --btn-primary-text: #0a0a0a;
+      color-scheme: dark;
+    }
+    html[data-theme="light"] {
+      --bg:        oklch(97% 0.008 80);
+      --bg-raised: oklch(94% 0.010 78);
+      --bg-subtle: oklch(91% 0.012 76);
+      --bg-alt:    oklch(95.5% 0.009 78);
+      --border:    oklch(84% 0.015 75);
+      --text:      oklch(15% 0.015 60);
+      --muted:     oklch(44% 0.018 68);
+      --accent:    oklch(50% 0.18 200);
+      --accent-dim:oklch(44% 0.14 200);
+      --code-bg:   oklch(91% 0.012 76);
+      --nav-rgba:  rgba(250, 247, 242, 0.9);
+      --modal-shadow: rgba(30, 26, 20, 0.15);
+      --btn-primary-text: #faf7f2;
+      color-scheme: light;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 clamp(20px, 5vw, 60px);
+    }
+
+    section { padding: clamp(64px, 10vw, 120px) 0; }
+    section + section { border-top: 1px solid var(--border); }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: color-mix(in oklch, var(--bg) 90%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav .inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 clamp(20px, 5vw, 60px);
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .nav-back {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .nav-back:hover { color: var(--text); }
+    .nav-sep {
+      width: 1px;
+      height: 14px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+    .nav-mark {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-mark span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      margin-left: auto;
+    }
+    .nav-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .theme-toggle {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 8px;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+    .theme-toggle:hover { color: var(--text); background: var(--bg-subtle); }
+    html[data-theme="dark"]  .icon-moon { display: none; }
+    html[data-theme="light"] .icon-sun  { display: none; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: clamp(80px, 14vw, 160px) 0 clamp(64px, 10vw, 100px);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-label {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hero-label::before {
+      content: '';
+      display: block;
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+    h1 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(42px, 7vw, 88px);
+      line-height: 1.02;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      max-width: 820px;
+      margin-bottom: 28px;
+    }
+    h1 em { font-style: italic; color: var(--accent); }
+    .hero-sub {
+      font-size: clamp(16px, 1.8vw, 19px);
+      font-weight: 300;
+      color: var(--muted);
+      max-width: 560px;
+      line-height: 1.65;
+      margin-bottom: 40px;
+    }
+
+    /* ── Install block ── */
+    .install-wrap {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      max-width: 540px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      background: var(--bg-raised);
+    }
+    .install-code {
+      flex: 1;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--text);
+      padding: 14px 18px;
+      letter-spacing: 0.02em;
+    }
+    .dollar { color: var(--accent); margin-right: 6px; }
+    .copy-btn {
+      background: var(--bg-subtle);
+      border: none;
+      border-left: 1px solid var(--border);
+      padding: 14px 18px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .copy-btn:hover { color: var(--text); background: var(--border); }
+    .copy-btn.copied { color: var(--accent); }
+
+    .badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .badge {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 10px;
+    }
+
+    /* ── Section heading ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+    h2 {
+      font-family: 'Instrument Serif', serif;
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      color: var(--text);
+      margin-bottom: clamp(28px, 4vw, 48px);
+    }
+
+    /* ── Feature grid ── */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .feature-card {
+      padding: 28px 32px;
+      background: var(--bg-raised);
+    }
+    .feature-icon {
+      font-size: 20px;
+      margin-bottom: 14px;
+      display: block;
+    }
+    .feature-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── Output demo ── */
+    .output-demo {
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 32px;
+    }
+    .output-demo-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-subtle);
+    }
+    .demo-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .demo-dot.r { background: #ff5f57; }
+    .demo-dot.y { background: #febc2e; }
+    .demo-dot.g { background: #28c840; }
+    .demo-filename {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      margin-left: 6px;
+    }
+    .output-demo pre {
+      padding: 24px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--muted);
+      overflow-x: auto;
+    }
+    .json-key   { color: var(--accent); }
+    .json-str   { color: oklch(75% 0.14 140); }
+    .json-num   { color: oklch(78% 0.14 50); }
+    .json-bool  { color: oklch(75% 0.14 300); }
+
+    /* ── How it works steps ── */
+    .how-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .how-step {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .how-step:last-child { border-bottom: none; }
+    .how-step-num {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 26px;
+      font-family: 'SF Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      border-right: 1px solid var(--border);
+      background: var(--bg-raised);
+    }
+    .how-step-body {
+      padding: 24px 28px;
+      background: var(--bg-raised);
+    }
+    .how-step-body h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .how-step-body p {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .how-step-body code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11.5px;
+      color: var(--accent);
+      background: var(--code-bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+
+    /* ── Usage examples ── */
+    .usage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .usage-card {
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 22px;
+    }
+    .usage-card-cmd {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 10px;
+      letter-spacing: 0.02em;
+    }
+    .usage-card-desc {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ── Install section ── */
+    .install-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .install-step {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .install-step:last-child { border-bottom: none; }
+    .install-step-num {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 24px;
+      font-family: 'SF Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      border-right: 1px solid var(--border);
+      background: var(--bg-raised);
+      letter-spacing: 0.06em;
+    }
+    .install-step-body {
+      padding: 22px 28px;
+      background: var(--bg-raised);
+    }
+    .install-step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+    .install-step-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .install-step-desc {
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .install-step-desc code {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 11.5px;
+      color: var(--accent);
+      background: var(--code-bg);
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .install-step-code {
+      margin-top: 14px;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--text);
+      letter-spacing: 0.01em;
+      line-height: 1.6;
+    }
+    .install-step-code .dollar { color: var(--accent); }
+
+    /* ── Requirements ── */
+    .reqs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 28px;
+    }
+    .req {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--muted);
+      background: var(--bg-raised);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: clamp(32px, 5vw, 56px) 0;
+    }
+    footer .inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 clamp(20px, 5vw, 60px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    footer p {
+      font-size: 13px;
+      font-weight: 300;
+      color: var(--muted);
+    }
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav aria-label="Site navigation">
+    <div class="inner">
+      <a href="../index.html#sec-skills" class="nav-back">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Portfolio
+      </a>
+      <div class="nav-sep"></div>
+      <a href="#" class="nav-mark">/measure</a>
+      <div class="nav-links">
+        <a href="#what">The problem</a>
+        <a href="#captures">What it captures</a>
+        <a href="#how">How it works</a>
+        <a href="#install">Install</a>
+      </div>
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle light/dark mode">
+        <svg class="icon-sun" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+          <circle cx="7.5" cy="7.5" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+          <line x1="7.5" y1="1" x2="7.5" y2="3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="7.5" y1="12" x2="7.5" y2="14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="1" y1="7.5" x2="3" y2="7.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="12" y1="7.5" x2="14" y2="7.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="3.05" y1="3.05" x2="4.46" y2="4.46" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="10.54" y1="10.54" x2="11.95" y2="11.95" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="11.95" y1="3.05" x2="10.54" y2="4.46" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <line x1="4.46" y1="10.54" x2="3.05" y2="11.95" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <svg class="icon-moon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+          <path d="M12.5 9.5A6 6 0 0 1 5.5 2.5a6 6 0 1 0 7 7z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <!-- ── Hero ── -->
+    <section class="hero">
+      <p class="hero-label">Claude Code · Slash command &nbsp;·&nbsp; <span style="font-weight:300;letter-spacing:0.04em;color:var(--muted);text-transform:none;">by Mehul Jatiya</span></p>
+      <h1>Claude was taking screenshots<br>to read your layout.<br><em>That ends here.</em></h1>
+      <p class="hero-sub">Without /measure, Claude guesses padding and spacing from screenshots — imprecise, repetitive, expensive. /measure gives it the exact computed values for every element upfront. Fixes land on the first try.</p>
+
+      <!-- Stats row -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:36px 0 32px;">
+        <div style="background:var(--bg-raised);padding:22px 24px;">
+          <div style="font-family:'SF Mono','Fira Code',monospace;font-size:clamp(28px,4vw,40px);font-weight:600;color:var(--accent);letter-spacing:-0.03em;line-height:1;">~57k</div>
+          <div style="font-size:13px;font-weight:400;color:var(--muted);margin-top:6px;line-height:1.4;">tokens saved<br>per session</div>
+        </div>
+        <div style="background:var(--bg-raised);padding:22px 24px;">
+          <div style="font-family:'SF Mono','Fira Code',monospace;font-size:clamp(28px,4vw,40px);font-weight:600;color:var(--accent);letter-spacing:-0.03em;line-height:1;">52%</div>
+          <div style="font-size:13px;font-weight:400;color:var(--muted);margin-top:6px;line-height:1.4;">reduction in<br>token usage</div>
+        </div>
+        <div style="background:var(--bg-raised);padding:22px 24px;">
+          <div style="font-family:'SF Mono','Fira Code',monospace;font-size:clamp(28px,4vw,40px);font-weight:600;color:var(--accent);letter-spacing:-0.03em;line-height:1;">7 → 3</div>
+          <div style="font-size:13px;font-weight:400;color:var(--muted);margin-top:6px;line-height:1.4;">Chrome DevTools<br>calls per fix</div>
+        </div>
+      </div>
+
+      <p style="margin-bottom: 10px; font-size: 13px; font-weight: 300; color: var(--muted);">
+        Install — one file, done in 30 seconds:
+      </p>
+
+      <div class="install-wrap">
+        <div class="install-code" style="font-size:12px;">
+          <span class="dollar">$ </span>curl -o ~/.claude/commands/measure.md \<br>&nbsp;&nbsp;&nbsp;&nbsp;https://mehuljatiya.github.io/measure/measure.md
+        </div>
+        <button class="copy-btn" id="copy-btn" onclick="copyInstall()">
+          <svg id="copy-icon" aria-hidden="true" width="13" height="13" viewBox="0 0 13 13" fill="none" style="display:inline-block;vertical-align:middle;margin-right:5px;">
+            <rect x="4.5" y="4.5" width="7" height="7" rx="1" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M2.5 8.5H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5a1 1 0 0 1 1 1v.5" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+          <svg id="check-icon" aria-hidden="true" width="13" height="13" viewBox="0 0 13 13" fill="none" style="display:none;vertical-align:middle;margin-right:5px;">
+            <polyline points="2,7 5,10 11,3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Copy
+        </button>
+      </div>
+
+      <p style="margin-top: 14px; font-size: 13px; font-weight: 300; color: var(--muted);">
+        One file in <code style="font-family:'SF Mono','Fira Code',monospace;font-size:11.5px;color:var(--accent);background:var(--code-bg);padding:1px 5px;border-radius:3px;">~/.claude/commands/</code> — Claude Code picks it up automatically. Then type <code style="font-family:'SF Mono','Fira Code',monospace;font-size:11.5px;color:var(--accent);background:var(--code-bg);padding:1px 5px;border-radius:3px;">/measure</code> in any project.
+      </p>
+
+      <div class="badges" style="margin-top: 24px;">
+        <span class="badge">Single .md file</span>
+        <span class="badge">Requires Claude Code</span>
+        <span class="badge">Static + dev server</span>
+        <span class="badge">Zero code changes</span>
+      </div>
+    </section>
+
+    <!-- ── Before vs After ── -->
+    <section id="what">
+      <p class="section-label">The problem it solves</p>
+      <h2>The screenshot loop is costing you every session</h2>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px;">
+        <!-- Before -->
+        <div style="background:var(--bg-raised);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:oklch(65% 0.18 25);">Without /measure</span>
+          </div>
+          <div style="padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="color:oklch(65% 0.18 25);flex-shrink:0;font-size:13px;margin-top:1px;">→</span>
+              <p style="font-size:14px;font-weight:300;color:var(--muted);line-height:1.5;">"Fix the card padding" — Claude takes a screenshot to see the layout</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="color:oklch(65% 0.18 25);flex-shrink:0;font-size:13px;margin-top:1px;">→</span>
+              <p style="font-size:14px;font-weight:300;color:var(--muted);line-height:1.5;">Interprets it visually: "looks like ~12px?" — writes a guess</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="color:oklch(65% 0.18 25);flex-shrink:0;font-size:13px;margin-top:1px;">→</span>
+              <p style="font-size:14px;font-weight:300;color:var(--muted);line-height:1.5;">Still off — takes another screenshot, adjusts, repeats 2–3 more times</p>
+            </div>
+            <div style="margin-top:8px;padding:12px 14px;background:var(--bg-subtle);border-radius:8px;">
+              <p style="font-family:'SF Mono','Fira Code',monospace;font-size:12px;color:oklch(65% 0.18 25);">7 Chrome calls &nbsp;·&nbsp; ~110k tokens &nbsp;·&nbsp; 3–4 iterations</p>
+            </div>
+          </div>
+        </div>
+        <!-- After -->
+        <div style="background:var(--bg-raised);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+          <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+            <span style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);">With /measure</span>
+          </div>
+          <div style="padding:20px 22px;display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="color:var(--accent);flex-shrink:0;font-size:13px;margin-top:1px;">→</span>
+              <p style="font-size:14px;font-weight:300;color:var(--muted);line-height:1.5;">Run <code style="font-family:'SF Mono',monospace;font-size:11px;color:var(--accent);background:var(--code-bg);padding:1px 4px;border-radius:3px;">/measure</code> once — captures exact computed CSS for every element</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="color:var(--accent);flex-shrink:0;font-size:13px;margin-top:1px;">→</span>
+              <p style="font-size:14px;font-weight:300;color:var(--muted);line-height:1.5;">"Fix the card padding" — Claude already knows it's exactly <code style="font-family:'SF Mono',monospace;font-size:11px;color:var(--accent);background:var(--code-bg);padding:1px 4px;border-radius:3px;">12px</code>, writes the correct fix</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start;">
+              <span style="color:var(--accent);flex-shrink:0;font-size:13px;margin-top:1px;">→</span>
+              <p style="font-size:14px;font-weight:300;color:var(--muted);line-height:1.5;">No screenshots needed for the rest of the session — snapshot stays in context</p>
+            </div>
+            <div style="margin-top:8px;padding:12px 14px;background:var(--bg-subtle);border-radius:8px;">
+              <p style="font-family:'SF Mono','Fira Code',monospace;font-size:12px;color:var(--accent);">3 Chrome calls &nbsp;·&nbsp; ~53k tokens &nbsp;·&nbsp; 1 iteration</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:14px;font-weight:300;color:var(--muted);line-height:1.65;max-width:680px;">
+        The same savings apply when fixing font sizes, border radii, spacing between elements, or any visual property. Claude stops guessing from images and starts working from numbers — across every fix in the session.
+      </p>
+    </section>
+
+    <!-- ── What it captures ── -->
+    <section id="captures">
+      <p class="section-label">What it captures</p>
+      <h2>Exact values, not visual estimates</h2>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <span class="feature-icon">⌖</span>
+          <h3>50+ CSS properties per element</h3>
+          <p>Padding, margin, font size, line height, colors, border radius, shadows, flex/grid layout, position — everything computed, not declared. What the browser actually rendered.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">◎</span>
+          <h3>Auto-discovers every element</h3>
+          <p>No annotations. Finds semantic HTML, ARIA roles, design-system class patterns, interactive elements, and the 30 largest visual regions — automatically.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">⚡</span>
+          <h3>Smart routing</h3>
+          <p>Detects static site vs dev server. Navigates via <code>file://</code> directly for static projects — no port-probing, no capturing the wrong project's page.</p>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">◈</span>
+          <h3>Reused across the session</h3>
+          <p>Writes <code>layout-snapshot.json</code> to the project root. Claude references it for every subsequent fix — one capture, zero re-measuring.</p>
+        </div>
+      </div>
+
+      <div class="output-demo">
+        <div class="output-demo-header">
+          <div class="demo-dot r"></div>
+          <div class="demo-dot y"></div>
+          <div class="demo-dot g"></div>
+          <span class="demo-filename">layout-snapshot.json</span>
+        </div>
+        <pre><code><span class="json-key">"_meta"</span>: {
+  <span class="json-key">"url"</span>:      <span class="json-str">"http://localhost:5173/transactions"</span>,
+  <span class="json-key">"viewport"</span>: { <span class="json-key">"w"</span>: <span class="json-num">1440</span>, <span class="json-key">"h"</span>: <span class="json-num">900</span> },
+  <span class="json-key">"total"</span>:    <span class="json-num">62</span>  <span style="color:var(--border)">// elements captured</span>
+},
+<span class="json-key">"elements"</span>: [
+  {
+    <span class="json-key">"tag"</span>:          <span class="json-str">"div"</span>,  <span style="color:var(--border)">// .transaction-card</span>
+    <span class="json-key">"_rect"</span>:        { <span class="json-key">"w"</span>: <span class="json-num">1352</span>, <span class="json-key">"h"</span>: <span class="json-num">72</span>, <span class="json-key">"x"</span>: <span class="json-num">44</span>, <span class="json-key">"y"</span>: <span class="json-num">180</span> },
+    <span class="json-key">"paddingTop"</span>:   <span class="json-str">"12px"</span>,   <span style="color:var(--border)">// exact — not a screenshot guess</span>
+    <span class="json-key">"paddingLeft"</span>:  <span class="json-str">"16px"</span>,
+    <span class="json-key">"fontSize"</span>:     <span class="json-str">"14px"</span>,
+    <span class="json-key">"gap"</span>:          <span class="json-str">"12px"</span>,
+    <span class="json-key">"borderRadius"</span>: <span class="json-str">"8px"</span>,
+    <span class="json-key">"borderBottom"</span>: <span class="json-str">"1px solid oklch(22% 0.010 60)"</span>
+    <span style="color:var(--border)">// + 44 more properties</span>
+  }
+]</code></pre>
+      </div>
+    </section>
+
+    <!-- ── How it works ── -->
+    <section id="how">
+      <p class="section-label">How it works</p>
+      <h2>Smart routing, zero wasted calls</h2>
+
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-num">01</div>
+          <div class="how-step-body">
+            <h4>Detect static vs dev server</h4>
+            <p>Checks for <code>package.json</code>. Static sites open directly via <code>file://</code> — no port probing, no risk of landing on another project's server. Dev server projects read the port from <code>scripts.dev</code> or <code>vite.config.ts</code>.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">02</div>
+          <div class="how-step-body">
+            <h4>Handle the server without waste</h4>
+            <p>For dev servers: if the right project is already running, it reuses it. If a different project is on the port, it kills and restarts correctly. It never captures the wrong project's page — the mistake that costs ~57k tokens to recover from.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">03</div>
+          <div class="how-step-body">
+            <h4>Navigate, wait, capture</h4>
+            <p>Opens the URL in Chrome via DevTools MCP, waits for <code>document.readyState === 'complete'</code>, adds 1.5s for async renders, then injects the capture script. 3 Chrome calls total — regardless of project type.</p>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">04</div>
+          <div class="how-step-body">
+            <h4>Write once, reference all session</h4>
+            <p>Saves exact computed values to <code>layout-snapshot.json</code>. Claude reads it at the start of every subsequent task in the session — no re-measuring, no new screenshots for layout questions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Usage ── -->
+    <section id="usage">
+      <p class="section-label">Usage</p>
+      <h2>Works on any page, any project type</h2>
+
+      <div class="usage-grid">
+        <div class="usage-card">
+          <p class="usage-card-cmd">/measure</p>
+          <p class="usage-card-desc">Captures the root page — <code style="font-family:'SF Mono',monospace;font-size:11px;color:var(--accent);background:var(--code-bg);padding:1px 4px;border-radius:3px;">/</code> for dev servers, <code style="font-family:'SF Mono',monospace;font-size:11px;color:var(--accent);background:var(--code-bg);padding:1px 4px;border-radius:3px;">index.html</code> for static sites.</p>
+        </div>
+        <div class="usage-card">
+          <p class="usage-card-cmd">/measure transactions</p>
+          <p class="usage-card-desc">Navigates to <code style="font-family:'SF Mono',monospace;font-size:11px;color:var(--accent);background:var(--code-bg);padding:1px 4px;border-radius:3px;">/transactions</code> on the dev server before capturing.</p>
+        </div>
+        <div class="usage-card">
+          <p class="usage-card-cmd">/measure about.html</p>
+          <p class="usage-card-desc">Opens a specific HTML file for static sites. The <code style="font-family:'SF Mono',monospace;font-size:11px;color:var(--accent);background:var(--code-bg);padding:1px 4px;border-radius:3px;">.html</code> extension triggers static mode.</p>
+        </div>
+        <div class="usage-card">
+          <p class="usage-card-cmd">/measure complaints/123</p>
+          <p class="usage-card-desc">Works with nested routes and dynamic path segments.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Install ── -->
+    <section id="install">
+      <p class="section-label">Get started</p>
+      <h2>One file. Installed in 30 seconds.</h2>
+
+      <div class="install-steps">
+        <div class="install-step">
+          <div class="install-step-num">1</div>
+          <div class="install-step-body">
+            <div class="install-step-header">
+              <span class="install-step-title">Install Claude Code</span>
+            </div>
+            <p class="install-step-desc">You'll need <code>@anthropic-ai/claude-code</code> installed globally and an Anthropic API key from <code>console.anthropic.com</code>.</p>
+            <div class="install-step-code">
+              <span class="dollar">$</span> npm install -g @anthropic-ai/claude-code
+            </div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-num">2</div>
+          <div class="install-step-body">
+            <div class="install-step-header">
+              <span class="install-step-title">Drop in the command file</span>
+            </div>
+            <p class="install-step-desc">Copies <code>measure.md</code> into <code>~/.claude/commands/</code> — the folder Claude Code scans for slash commands on startup. Nothing else is installed.</p>
+            <div class="install-step-code">
+              <span class="dollar">$</span> curl -o ~/.claude/commands/measure.md \<br>&nbsp;&nbsp;&nbsp;&nbsp;https://mehuljatiya.github.io/measure/measure.md
+            </div>
+          </div>
+        </div>
+        <div class="install-step">
+          <div class="install-step-num">3</div>
+          <div class="install-step-body">
+            <div class="install-step-header">
+              <span class="install-step-title">Run it</span>
+            </div>
+            <p class="install-step-desc">Open any project in Claude Code and type <code>/measure</code>. Claude reads the snapshot before your first visual fix — and doesn't need another screenshot for the rest of the session.</p>
+            <div class="install-step-code">
+              <span class="dollar">$</span> cd my-project<br><span class="dollar">$</span> claude<br><span style="color:var(--muted)"># inside Claude:</span><br><span class="dollar">/</span>measure
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reqs">
+        <span class="req">Claude Code (any version)</span>
+        <span class="req">Chrome DevTools MCP plugin</span>
+        <span class="req">Anthropic API key</span>
+      </div>
+
+      <p style="margin-top: 16px; font-size: 13px; font-weight: 300; color: var(--muted);">
+        The Chrome DevTools MCP plugin powers the browser automation. Install it inside Claude with: <code style="font-family:'SF Mono','Fira Code',monospace;font-size:11.5px;color:var(--accent);background:var(--code-bg);padding:1px 5px;border-radius:3px;">claude plugin install chrome-devtools-mcp@chrome-devtools-plugins</code>
+      </p>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="inner">
+      <p>MIT License · by <a href="https://github.com/mehuljatiya" target="_blank">Mehul Jatiya</a></p>
+      <a href="measure.md" download style="font-size:13px;font-weight:400;color:var(--muted);text-decoration:none;transition:color 0.15s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+          <path d="M6.5 1v7.5M6.5 8.5l-3-3m3 3 3-3M1 11.5h11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Download measure.md
+      </a>
+    </div>
+  </footer>
+
+  <script>
+    function toggleTheme() {
+      const html = document.documentElement;
+      const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
+      html.dataset.theme = next;
+      localStorage.setItem('measure-theme', next);
+    }
+
+    function copyInstall() {
+      const cmd = 'curl -o ~/.claude/commands/measure.md https://mehuljatiya.github.io/measure/measure.md';
+      navigator.clipboard.writeText(cmd).then(() => {
+        const btn = document.getElementById('copy-btn');
+        const copyIcon = document.getElementById('copy-icon');
+        const checkIcon = document.getElementById('check-icon');
+        copyIcon.style.display = 'none';
+        checkIcon.style.display = 'inline-block';
+        btn.lastChild.textContent = 'Copied';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          copyIcon.style.display = 'inline-block';
+          checkIcon.style.display = 'none';
+          btn.lastChild.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+  </script>
+
+</body>
+</html>
