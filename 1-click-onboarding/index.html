@@ -74,7 +74,6 @@ img {
 
 /* ── LAYOUT SHELL ─────────────────────────────────────────────── */
 /* Shared horizontal padding, one source of truth */
-.nav,
 .hero,
 .role-bar,
 .content,
@@ -84,24 +83,34 @@ img {
   width: 100%;
 }
 
-/* ── NAV ──────────────────────────────────────────────────────── */
-.nav {
-  display: flex;
-  justify-content: space-between;
+/* ── STICKY NAV ───────────────────────────────────────────────── */
+.sticky-nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  padding: 14px clamp(20px, 4vw, 2.5rem);
+  background: transparent;
+  pointer-events: none;
+}
+.sticky-nav a {
+  display: inline-flex;
   align-items: center;
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border);
-  gap: 1rem;
-}
-.nav a {
-  font-size: 0.85rem;
-  color: var(--muted);
+  gap: 8px;
+  height: 40px;
+  background: rgba(18,18,18,0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 100px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(242,242,242,0.72);
   text-decoration: none;
-  white-space: nowrap;
+  transition: color 0.15s, border-color 0.15s;
+  pointer-events: all;
 }
-.nav a:hover { color: var(--text); }
-.nav .brand { font-weight: 600; color: var(--text); font-size: 0.9rem; }
+.sticky-nav a:hover { color: #f2f2f2; border-color: rgba(255,255,255,0.25); }
 
 /* ── HERO ─────────────────────────────────────────────────────── */
 .hero {
@@ -814,16 +823,24 @@ svg [stroke="#1F67F1"] { stroke: #1F67F1 !important; }
   /* Version insight */
   .version-insight { font-size: 0.82rem; }
 }
+
+#pt-overlay {
+  position: fixed; inset: 0; background: #080808;
+  z-index: 10000; pointer-events: none;
+  will-change: transform; transform: translateX(100%);
+}
 </style>
 </head>
 <body>
 
 <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<!-- BACK NAV -->
-<div style="position:sticky;top:0;z-index:100;background:rgba(8,8,8,0.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,0.08);padding:0.75rem 2.5rem;">
-  <a href="../" style="display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;font-weight:500;color:rgba(242,242,242,0.55);text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='#f2f2f2'" onmouseout="this.style.color='rgba(242,242,242,0.55)'">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 2.5L4 7l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<!-- STICKY NAV -->
+<div class="sticky-nav">
+  <a href="../index.html">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8.5 2.5L4 7l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
     Back to portfolio
   </a>
 </div>
@@ -1446,7 +1463,43 @@ svg [stroke="#1F67F1"] { stroke: #1F67F1 !important; }
 
 </main>
 
+<div id="pt-overlay"></div>
 <script>
+(function () {
+  var overlay = document.getElementById('pt-overlay');
+  var DUR = 340;
+  var EASE_IN  = 'transform ' + DUR + 'ms cubic-bezier(0.4,0,1,1)';
+  var EASE_OUT = 'transform ' + DUR + 'ms cubic-bezier(0,0,0.2,1)';
+  function move(x, trans) {
+    overlay.style.transition = trans || 'none';
+    overlay.style.transform  = 'translateX(' + x + ')';
+  }
+  if (sessionStorage.getItem('pt') === 'forward') {
+    sessionStorage.removeItem('pt');
+    move('0%');
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { move('-100%', EASE_OUT); });
+    });
+  } else { move('100%'); }
+  var backBtn = document.querySelector('.sticky-nav a');
+  if (backBtn) {
+    backBtn.addEventListener('click', function (e) {
+      var href = backBtn.getAttribute('href');
+      if (!href) return;
+      e.preventDefault();
+      move('-100%');
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          overlay.style.pointerEvents = 'all';
+          move('0%', EASE_IN);
+          sessionStorage.setItem('pt', 'back');
+          setTimeout(function () { window.location.href = href; }, DUR);
+        });
+      });
+    });
+  }
+})();
+
 function toggleV2Video(frame) {
   var video = frame.querySelector('video');
   var overlay = frame.querySelector('.v2-play-btn');

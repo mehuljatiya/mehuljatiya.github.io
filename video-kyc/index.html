@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video KYC Ecosystem, Mehul Jatiya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── TOKENS ───────────────────────────────────────────────────── */
+:root {
+  --blue:   #1F67F1;
+  --text:   #f2f2f2;
+  --muted:  rgba(242,242,242,0.62);
+  --bg:     #161616;
+  --page:   #080808;
+  --border: rgba(255,255,255,0.10);
+  --font: 'Kumbh Sans', sans-serif;
+  --serif: 'Playfair Display', Georgia, serif;
+  --gutter: max(1.5rem, calc((100% - 1080px) / 2));
+}
+
+/* ── BASE ─────────────────────────────────────────────────────── */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  background: var(--page);
+}
+
+body {
+  background: var(--page);
+  color: var(--text);
+  font-family: var(--font);
+  font-weight: 400;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  max-width: clamp(760px, 65vw, 1040px);
+  margin: 0 auto;
+  overflow-x: hidden;
+}
+
+* {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ── SKIP LINK ────────────────────────────────────────────────── */
+.skip-link {
+  position: absolute; top: -100px; left: 1rem;
+  background: var(--blue); color: #fff;
+  padding: 0.5rem 1rem; font-family: var(--font);
+  font-size: 0.85rem; z-index: 9999; text-decoration: none;
+  border-radius: 2px;
+}
+.skip-link:focus { top: 0; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+
+/* ── LAYOUT SHELL ─────────────────────────────────────────────── */
+.nav,
+.hero,
+.content {
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+  width: 100%;
+}
+
+/* ── STICKY NAV ───────────────────────────────────────────────── */
+.sticky-nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  padding: 14px clamp(20px, 4vw, 2.5rem);
+  background: transparent;
+  pointer-events: none;
+}
+.sticky-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  background: rgba(18,18,18,0.88);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 100px;
+  padding: 0 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(242,242,242,0.72);
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+  pointer-events: all;
+}
+.sticky-nav a:hover { color: #f2f2f2; border-color: rgba(255,255,255,0.25); }
+
+/* ── HERO ─────────────────────────────────────────────────────── */
+.hero {
+  padding-top: 4rem;
+  padding-bottom: 0;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.25rem;
+  margin-bottom: 2rem;
+}
+.hero-meta span {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.hero-meta .sep { color: var(--border); }
+.hero-meta .tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--muted);
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.65rem;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.hero-meta .tag-accent {
+  color: #fff;
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.hero h1 {
+  font-family: var(--serif);
+  font-size: clamp(2.625rem, 6.5vw, 4.25rem);
+  font-weight: 700;
+  line-height: 1.03;
+  letter-spacing: -0.015em;
+  color: var(--text);
+  margin-bottom: 2rem;
+}
+.hero h1 .dim {
+  font-style: italic;
+  font-weight: 400;
+  color: rgba(242,242,242,0.42);
+  display: block;
+}
+
+.hero-desc {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 100%;
+  margin-bottom: 1.25rem;
+}
+.hero-desc + .hero-desc {
+  color: rgba(242,242,242,0.45);
+}
+
+/* ── COVER IMAGE ──────────────────────────────────────────────── */
+.cover-img {
+  width: 100%;
+  display: block;
+  padding: 0 2.5rem;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.cover-img img {
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  display: block;
+  margin: -24px auto;
+  border-radius: 8px;
+}
+
+
+/* ── CONTENT ──────────────────────────────────────────────────── */
+.content {
+  padding-top: 0;
+  padding-bottom: 2rem;
+}
+
+/* ── SECTION ──────────────────────────────────────────────────── */
+.section {
+  padding-top: 4.5rem;
+  width: 100%;
+}
+.section:last-child { padding-bottom: 4.5rem; }
+
+/* ── SECTION SUB-HEADING ──────────────────────────────────────── */
+.section h3 {
+  font-size: clamp(0.9375rem, 1.8vw, 1.0625rem);
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* ── SECTION LABEL pill ───────────────────────────────────────── */
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(31, 103, 241, 0.15);
+  color: var(--blue);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  padding: 0.3rem 0.75rem;
+  border-radius: 100px;
+  margin-bottom: 1.5rem;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* ── SECTION HEADING ──────────────────────────────────────────── */
+.section-heading {
+  margin-bottom: 2rem;
+  width: 100%;
+}
+.section-heading h2 {
+  font-family: var(--serif);
+  font-size: clamp(1.625rem, 3.5vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.section-heading h2 span {
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* ── BODY TEXT ────────────────────────────────────────────────── */
+p {
+  font-size: clamp(1rem, 1.8vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.8;
+  color: var(--muted);
+  margin-bottom: 1.25rem;
+  max-width: 100%;
+}
+p strong { font-weight: 600; color: var(--text); }
+
+/* ── CALLOUT ──────────────────────────────────────────────────── */
+.callout {
+  border: 1px solid rgba(31, 103, 241, 0.3);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  background: rgba(31, 103, 241, 0.07);
+  margin: 2rem 0;
+  font-size: clamp(1rem, 1.8vw, 1.125rem);
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.7;
+  width: 100%;
+}
+.callout.dark {
+  border-color: var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+}
+.callout-attr {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  font-style: normal;
+  margin-top: 0.5rem;
+}
+
+/* ── CARDS GRID ───────────────────────────────────────────────── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 2rem 0;
+  width: 100%;
+}
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  min-width: 0;
+}
+.card h4 {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+.card p {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.65;
+}
+.card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.card ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.card ul li::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 5px;
+  background: rgba(31, 103, 241, 0.45);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  margin-top: 0.42em;
+}
+
+/* ── INSIGHTS GRID (2×2) ─────────────────────────────────────── */
+.insights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin: 2rem 0;
+  width: 100%;
+}
+.insight-item {
+  min-width: 0;
+}
+.insight-num {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  background: rgba(255,255,255,0.12);
+  border: 1px solid var(--border);
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  margin-bottom: 0.75rem;
+}
+.insight-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+.insight-body {
+  font-size: 0.82rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+}
+.insight-source {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 1.5rem;
+}
+
+/* ── PRINCIPLES ROW ───────────────────────────────────────────── */
+.principles-row {
+  display: flex;
+  margin: 2.5rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  width: 100%;
+}
+.principle {
+  flex: 1;
+  padding: 1.25rem 1rem;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.principle:last-child { border-right: none; }
+.principle-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.principle-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* ── USER NEEDS TABLE ─────────────────────────────────────────── */
+.user-table {
+  margin: 2rem 0;
+  width: 100%;
+}
+.user-row {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 1rem 1.5rem;
+  align-items: start;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+.user-row:last-child { border-bottom: 1px solid var(--border); }
+.user-role {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  padding-top: 0.05rem;
+}
+.user-need {
+  font-size: 0.88rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── YOUTUBE EMBED ────────────────────────────────────────────── */
+.yt-wrap {
+  margin: 2rem 0;
+}
+.yt-embed {
+  position: relative;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+}
+.yt-embed img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: block;
+  object-fit: cover;
+  transition: opacity 0.2s;
+}
+.yt-embed:hover img { opacity: 0.85; }
+.yt-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 68px;
+  height: 68px;
+  background: rgba(0,0,0,0.72);
+  border: 2px solid rgba(255,255,255,0.25);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: none;
+  transition: background 0.2s, transform 0.2s;
+}
+.yt-embed:hover .yt-play {
+  background: rgba(255,0,0,0.85);
+  transform: translate(-50%, -50%) scale(1.07);
+}
+.yt-play svg { width: 28px; height: 28px; fill: #fff; margin-left: 4px; }
+.yt-embed iframe {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: block;
+  border: none;
+}
+.yt-open-link {
+  display: block;
+  text-align: right;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--blue);
+  text-decoration: none;
+  margin-top: 0.5rem;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+.yt-open-link:hover { opacity: 1; text-decoration: underline; }
+
+/* ── PROTO EMBED ──────────────────────────────────────────────── */
+.proto-embed {
+  margin: 2rem 0 0.5rem;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 10px;
+  overflow: hidden;
+  background: oklch(13% 0.008 240);
+}
+.proto-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  gap: 0.75rem;
+}
+.proto-header-title {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.proto-header-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--blue);
+  opacity: 0.7;
+  white-space: nowrap;
+}
+.proto-embed iframe {
+  width: 100%;
+  display: block;
+  border: none;
+}
+.proto-embed.desktop iframe {
+  aspect-ratio: 16/9;
+}
+.proto-embed.mobile {
+  max-width: 400px;
+  margin: 2rem auto 0.5rem;
+}
+.proto-embed.mobile iframe {
+  aspect-ratio: 9/18;
+}
+.proto-open-link {
+  display: block;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--blue);
+  text-decoration: none;
+  margin-top: 0.25rem;
+  margin-bottom: 2rem;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+.proto-open-link:hover { opacity: 1; text-decoration: underline; }
+
+/* ── CHALLENGE LIST ───────────────────────────────────────────── */
+.challenge-list {
+  margin: 2rem 0;
+  width: 100%;
+}
+.challenge-item {
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--border);
+  min-width: 0;
+}
+.challenge-item:last-child { border-bottom: 1px solid var(--border); }
+.challenge-num {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+.challenge-body {
+  font-size: clamp(0.9375rem, 1.8vw, 1.0625rem);
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* ── LEARNINGS STACK ──────────────────────────────────────────── */
+.learnings-stack {
+  margin: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+.learnings-stack p {
+  font-size: clamp(0.9375rem, 1.8vw, 1.0625rem);
+  line-height: 1.75;
+  color: var(--muted);
+  margin: 0;
+}
+.learnings-stack p strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── SPLIT PROSE ──────────────────────────────────────────────── */
+.split-prose {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  margin: 2rem 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+.split-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  margin-bottom: 0.65rem;
+}
+.split-prose p {
+  font-size: 0.9rem;
+  line-height: 1.72;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ── BULLET LIST ──────────────────────────────────────────────── */
+.bullet-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.bullet-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: clamp(0.9375rem, 1.8vw, 1.0625rem);
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.bullet-list li::before {
+  content: '';
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--blue);
+  flex-shrink: 0;
+  margin-top: 0.55em;
+}
+
+/* ── IMPACT BLOCK ─────────────────────────────────────────────── */
+.impact-block {
+  background: rgba(31,103,241,0.08);
+  border: 1px solid rgba(31,103,241,0.25);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  margin: 2rem 0;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.7;
+  width: 100%;
+}
+.impact-block strong { color: #7aacff; }
+
+/* ── SITE PREVIEW ─────────────────────────────────────────────── */
+.site-preview {
+  display: block;
+  margin: 2rem 0;
+  width: 100%;
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 10px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+.site-preview:hover { border-color: rgba(31,103,241,0.45); }
+.site-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.625rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  gap: 0.75rem;
+}
+.site-preview-url {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+.site-preview-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--blue);
+  opacity: 0.8;
+  white-space: nowrap;
+}
+.site-preview img {
+  width: 100%;
+  display: block;
+}
+
+/* ── V2 IMAGE ─────────────────────────────────────────────────── */
+.v2-img-wrap {
+  margin: 2.5rem 0;
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+}
+.v2-img-wrap img {
+  max-width: 260px;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+
+/* ── RESULTS SECTION ──────────────────────────────────────────── */
+.section-results {
+  padding-top: 7.5rem;
+  padding-bottom: 5rem;
+}
+
+.results-primary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  margin: 3rem 0 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.result-stat {
+  padding: 3rem 2.5rem 3rem 0;
+  border-right: 1px solid var(--border);
+  min-width: 0;
+}
+.result-stat:last-child {
+  border-right: none;
+  padding-left: 2.5rem;
+  padding-right: 0;
+}
+
+.result-baseline {
+  font-size: 0.68rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(242,242,242,0.28);
+  margin-bottom: 0.5rem;
+}
+
+.result-val {
+  font-family: var(--serif);
+  font-size: clamp(4.5rem, 11vw, 7.5rem);
+  font-weight: 700;
+  line-height: 0.88;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 0.875rem;
+}
+
+.result-label {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+.result-delta {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--blue);
+  opacity: 0.75;
+}
+
+.results-secondary {
+  display: flex;
+  gap: 2.5rem;
+  margin: 1.5rem 0 0;
+  align-items: flex-start;
+}
+
+.results-secondary-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.rs-val {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.rs-lbl {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* ── CONVERSATION BLOCK ───────────────────────────────────────── */
+.convo-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  width: 100%;
+}
+.convo-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+.convo-q {
+  font-size: 0.92rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.75;
+  font-style: italic;
+  margin-bottom: 0.75rem;
+}
+.convo-highlight {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+.convo-reply {
+  font-size: 0.88rem;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.75;
+  font-style: italic;
+  margin-bottom: 0.75rem;
+}
+.convo-answer {
+  font-size: 0.95rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.75;
+  margin-bottom: 0.5rem;
+}
+.convo-translation {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--muted);
+  font-style: normal;
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ── REFLECTION GRID ──────────────────────────────────────────── */
+.reflection-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 2rem 0;
+  width: 100%;
+}
+.reflection-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+.reflection-grid p {
+  font-size: clamp(0.9375rem, 1.8vw, 1.0625rem);
+  max-width: 100%;
+  margin: 0;
+}
+
+/* ── NARROW SCREEN OVERRIDES (≤ 600px) ───────────────────────── */
+@media (max-width: 600px) {
+  .sticky-nav,
+  .nav,
+  .hero,
+  .content {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .hero { padding-top: 2.5rem; }
+  .section { padding-top: 3rem; }
+  .section:last-child { padding-bottom: 3rem; }
+
+  .cards-grid { grid-template-columns: 1fr; }
+  .insights-grid { grid-template-columns: 1fr; }
+  .principles-row { flex-wrap: wrap; }
+  .principle { flex: 1 1 calc(50% - 1px); border-right: none; border-bottom: 1px solid var(--border); }
+  .principle:nth-child(odd) { border-right: 1px solid var(--border); }
+  .principle:nth-last-child(-n+2) { border-bottom: none; }
+  .split-prose { grid-template-columns: 1fr; gap: 1.5rem; }
+  .reflection-grid { grid-template-columns: 1fr; }
+  .results-primary { grid-template-columns: 1fr; }
+  .result-stat { padding: 2rem 0; border-right: none; border-bottom: 1px solid var(--border); }
+  .result-stat:last-child { border-bottom: none; padding-left: 0; }
+  .section-results { padding-top: 5rem; padding-bottom: 3rem; }
+  .user-row { grid-template-columns: 1fr; gap: 0.25rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+/* ── PAGE TRANSITIONS ──────────────────────────────────────────── */
+#pt-overlay {
+  position: fixed;
+  inset: 0;
+  background: #080808;
+  z-index: 10000;
+  pointer-events: none;
+  will-change: transform;
+  transform: translateX(100%);
+}
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<!-- STICKY NAV -->
+<div class="sticky-nav">
+  <a href="../index.html">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8.5 2.5L4 7l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Back to portfolio
+  </a>
+</div>
+
+<!-- COVER IMAGE — full bleed -->
+<div class="cover-img">
+  <img src="assets/hero-interface.png" alt="Video KYC: Customer and Agent Interface" loading="eager">
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-meta">
+    <span class="tag">Cashfree Payments</span>
+    <span class="sep">·</span>
+    <span class="tag">Dec 2024 – Feb 2025</span>
+    <span class="sep">·</span>
+    <span class="tag tag-accent">Lead Designer · Acting Manager</span>
+  </div>
+
+  <h1>
+    Video KYC
+    <span class="dim">Ecosystem.</span>
+  </h1>
+
+  <p class="hero-desc">India's credit funnel has a trust problem. Financial institutions needed a way to verify identity remotely, compliantly, and fast enough that customers didn't drop off midway.</p>
+  <p class="hero-desc">I led this end to end at manager level: setting experience direction, aligning product, engineering, sales, and marketing, and shipping a product that moved conversion from 50% to 80% in sixty days.</p>
+</header>
+
+<!-- MAIN CONTENT -->
+<main id="main-content" class="content" tabindex="-1">
+
+  <!-- 01. THE SCOPE -->
+  <section class="section" aria-labelledby="scope-h">
+    <div class="section-label">01 · The Scope</div>
+    <div class="section-heading">
+      <h2 id="scope-h">Context &amp; Role</h2>
+    </div>
+
+    <p>Video KYC involves a complex ecosystem: customers, merchants, agents, auditors, and compliance teams. I acted as the <strong>single point of accountability</strong> for design, coordination, and decision-making.</p>
+
+    <div class="cards-grid">
+      <div class="card">
+        <h4>Responsibilities</h4>
+        <ul>
+          <li>Customer verification flow</li>
+          <li>Merchant dashboard</li>
+          <li>Agent workspace</li>
+          <li>Auditor review portal</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Leadership Actions</h4>
+        <ul>
+          <li>Set experience vision</li>
+          <li>Guided junior designers</li>
+          <li>Influenced tech stack</li>
+          <li>Aligned Sales &amp; Marketing</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02. DISCOVERY -->
+  <section class="section" aria-labelledby="discovery-h">
+    <div class="section-label">02 · Discovery</div>
+    <div class="section-heading">
+      <h2 id="discovery-h">Problem &amp; Insights</h2>
+    </div>
+
+    <h3>The Strategic Opportunity</h3>
+    <p>Companies using competitor solutions reported inconsistent UX that varied across use cases and dropped calls during peak volume. The verification industry was operating on infrastructure built for compliance, not conversion.</p>
+
+    <div class="callout">
+      "From a business lens, regulated entities needed a reliable partner. From a user lens, the process needed to be friction-free."
+    </div>
+
+    <p class="insight-source">From discovery calls with companies running competitor Video KYC services.</p>
+
+    <div class="insights-grid">
+      <div class="insight-item">
+        <div class="insight-num">Insight 01</div>
+        <div class="insight-title">The Drop-off Point</div>
+        <p class="insight-body">Every company flagged the same step: customers stalled at personal detail collection and dropped. The flow gave no indication of what came next or why the information was needed.</p>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">Insight 02</div>
+        <div class="insight-title">Agent Fatigue</div>
+        <p class="insight-body">Agents were managing live video calls while switching between separate tabs for document verification. Companies reported this split-screen workflow as their biggest source of call delays and agent error.</p>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">Insight 03</div>
+        <div class="insight-title">Auditor Errors</div>
+        <p class="insight-body">Auditors were catching discrepancies after cases were closed. Without structured review workflows, compliance slips went undetected until they became escalations requiring costly manual rework.</p>
+      </div>
+      <div class="insight-item">
+        <div class="insight-num">Insight 04</div>
+        <div class="insight-title">Merchant Visibility</div>
+        <p class="insight-body">Merchants had no real-time view into where customers were in the verification flow or why calls were failing. They were operating blind and flagging issues only after business was lost.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03. THE NORTH STAR -->
+  <section class="section" aria-labelledby="strategy-h">
+    <div class="section-label">03 · The North Star</div>
+    <div class="section-heading">
+      <h2 id="strategy-h">Experience Strategy</h2>
+    </div>
+
+    <p>I structured the interface around the operational realities of the users. This let us design a cohesive ecosystem rather than disconnected modules.</p>
+
+    <div class="principles-row">
+      <div class="principle">
+        <span class="principle-name">Speed</span>
+        <span class="principle-sub">Automated checks</span>
+      </div>
+      <div class="principle">
+        <span class="principle-name">Clarity</span>
+        <span class="principle-sub">Clear status</span>
+      </div>
+      <div class="principle">
+        <span class="principle-name">Accuracy</span>
+        <span class="principle-sub">Zero error</span>
+      </div>
+      <div class="principle">
+        <span class="principle-name">Trust</span>
+        <span class="principle-sub">Compliance</span>
+      </div>
+    </div>
+
+    <div class="user-table">
+      <div class="user-row">
+        <div class="user-role">Customers</div>
+        <p class="user-need">Needed guidance and clarity to reduce anxiety.</p>
+      </div>
+      <div class="user-row">
+        <div class="user-role">Agents</div>
+        <p class="user-need">Needed efficiency and stable controls to manage calls.</p>
+      </div>
+      <div class="user-row">
+        <div class="user-role">Auditors</div>
+        <p class="user-need">Needed quick review tools to process cases at scale.</p>
+      </div>
+      <div class="user-row">
+        <div class="user-role">Merchants</div>
+        <p class="user-need">Needed oversight, reporting, and configuration control.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04.1 CUSTOMER FLOW -->
+  <section class="section" aria-labelledby="customer-h">
+    <div class="section-label">04.1 · Execution</div>
+    <div class="section-heading">
+      <h2 id="customer-h">Customer Flow</h2>
+    </div>
+
+    <p>The goal was to reduce anxiety. We redesigned the journey into a clear, confidence-building flow with contextual nudges, progress indicators, and structured document capture.</p>
+
+    <div class="proto-embed mobile">
+      <div class="proto-header">
+        <span class="proto-header-title">Customer Verification Flow</span>
+        <span class="proto-header-tag">Figma Prototype</span>
+      </div>
+      <iframe
+        src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FaQFLpe28a4SuvctT8m33fK%2FCustomer-Journey-final_dec-2025%3Fnode-id%3D6011-1570%26scaling%3Dscale-down%26content-scaling%3Dfixed%26page-id%3D4%253A10%26starting-point-node-id%3D6011%253A1570"
+        title="Customer Verification Journey: Interactive Prototype"
+        allowfullscreen
+        loading="lazy">
+      </iframe>
+    </div>
+    <a class="proto-open-link" href="https://www.figma.com/proto/aQFLpe28a4SuvctT8m33fK/Customer-Journey-final_dec-2025?node-id=6011-1570&scaling=scale-down&content-scaling=fixed&page-id=4%3A10&starting-point-node-id=6011%3A1570" target="_blank" rel="noopener noreferrer">Open fullscreen in Figma ↗</a>
+  </section>
+
+  <!-- 04.2 AGENT WORKSPACE -->
+  <section class="section" aria-labelledby="agent-h">
+    <div class="section-label">04.2 · Execution</div>
+    <div class="section-heading">
+      <h2 id="agent-h">Agent Workspace</h2>
+    </div>
+
+    <p>Agents need extreme efficiency. We designed a unified interface where live video controls float directly over data entry forms. This allows agents to verify documents without breaking eye contact with the customer.</p>
+
+    <div class="proto-embed desktop">
+      <div class="proto-header">
+        <span class="proto-header-title">Agent Workspace</span>
+        <span class="proto-header-tag">Figma Prototype</span>
+      </div>
+      <iframe
+        src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FNdcMlVxlXbYkQlYm2lkDER%2FAgent---Auditor-Portal%3Fnode-id%3D4397-42196%26starting-point-node-id%3D4397%253A42196%26show-proto-sidebar%3D0%26scaling%3Dscale-down%26content-scaling%3Dfixed"
+        title="Agent Workspace Interface: Interactive Prototype"
+        allowfullscreen
+        loading="lazy">
+      </iframe>
+    </div>
+    <a class="proto-open-link" href="https://www.figma.com/proto/NdcMlVxlXbYkQlYm2lkDER/Agent---Auditor-Portal?node-id=4397-42196&starting-point-node-id=4397%3A42196&show-proto-sidebar=0&scaling=scale-down&content-scaling=fixed" target="_blank" rel="noopener noreferrer">Open fullscreen in Figma ↗</a>
+  </section>
+
+  <!-- 04.3 AUDITOR PORTAL -->
+  <section class="section" aria-labelledby="auditor-h">
+    <div class="section-label">04.3 · Execution</div>
+    <div class="section-heading">
+      <h2 id="auditor-h">Auditor Portal</h2>
+    </div>
+
+    <p>Auditors work on high volumes. The review portal features timestamped video playback, auto-flagged discrepancies, and keyboard shortcuts for rapid approval or rejection decisions.</p>
+
+    <div class="proto-embed desktop">
+      <div class="proto-header">
+        <span class="proto-header-title">Auditor Review Portal</span>
+        <span class="proto-header-tag">Figma Prototype</span>
+      </div>
+      <iframe
+        src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FNdcMlVxlXbYkQlYm2lkDER%2FAgent---Auditor-Portal%3Fpage-id%3D0%253A1%26node-id%3D2066-25185%26viewport%3D285%252C348%252C0.06%26scaling%3Dscale-down%26content-scaling%3Dfixed%26starting-point-node-id%3D2066%253A25185"
+        title="Auditor Review Portal: Interactive Prototype"
+        allowfullscreen
+        loading="lazy">
+      </iframe>
+    </div>
+    <a class="proto-open-link" href="https://www.figma.com/proto/NdcMlVxlXbYkQlYm2lkDER/Agent---Auditor-Portal?page-id=0%3A1&node-id=2066-25185&viewport=285%2C348%2C0.06&scaling=scale-down&content-scaling=fixed&starting-point-node-id=2066%3A25185" target="_blank" rel="noopener noreferrer">Open fullscreen in Figma ↗</a>
+  </section>
+
+  <!-- 05. PRODUCT EVANGELISM -->
+  <section class="section" aria-labelledby="pitch-h">
+    <div class="section-label">05 · Product Evangelism</div>
+    <div class="section-heading">
+      <h2 id="pitch-h">Product Evangelism</h2>
+    </div>
+
+    <p>Collaborated with <strong>Varun (PM)</strong> and <strong>Shubham (Eng Lead)</strong> to record the official product vision.</p>
+
+    <div class="callout dark">
+      I believe design leadership extends beyond pixels. It's about owning the narrative. I took the initiative to sit down with my counterparts in Product and Engineering to articulate our vision for a "Conversion-Friendly Video KYC" for the next 100 million Indians.
+    </div>
+
+    <div class="yt-wrap">
+      <div class="yt-embed" data-id="JcjH9orHeqg">
+        <img src="https://img.youtube.com/vi/JcjH9orHeqg/hqdefault.jpg" alt="Video KYC: Product Vision" loading="lazy">
+        <div class="yt-play">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+      <a class="yt-open-link" href="https://www.youtube.com/watch?v=JcjH9orHeqg" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a>
+    </div>
+
+    <div class="split-prose">
+      <div>
+        <div class="split-label">The Goal</div>
+        <p>Align internal sales teams and external clients on why we built this: addressing the key friction points in the credit funnel.</p>
+      </div>
+      <div>
+        <div class="split-label">My Contribution</div>
+        <p>I walked through the Agent and Auditor experiences, demonstrating how our design choices directly improved efficiency and reduced fraud.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06. RESULTS -->
+  <section class="section section-results" aria-labelledby="results-h">
+    <div class="section-label">06 · Results</div>
+    <div class="section-heading">
+      <h2 id="results-h">Sixty Days to <span>Success.</span></h2>
+    </div>
+
+    <p>From kickoff to launch in 60 days. The numbers that came back proved the design decisions were right.</p>
+
+    <div class="results-primary">
+      <div class="result-stat">
+        <div class="result-baseline">from 50%</div>
+        <div class="result-val">80%</div>
+        <div class="result-label">Conversion rate</div>
+        <div class="result-delta">+60% lift</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-baseline">from 8 min</div>
+        <div class="result-val">3m</div>
+        <div class="result-label">Avg call time</div>
+        <div class="result-delta">-62% reduction</div>
+      </div>
+    </div>
+
+    <div class="results-secondary">
+      <div class="results-secondary-stat">
+        <span class="rs-val">50</span>
+        <span class="rs-lbl">Monthly transacting merchants</span>
+      </div>
+      <div class="results-secondary-stat">
+        <span class="rs-val">₹1 Cr</span>
+        <span class="rs-lbl">Quarterly revenue</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07. LEARNINGS -->
+  <section class="section" aria-labelledby="learnings-h">
+    <div class="section-label">07 · Reflection</div>
+    <div class="section-heading">
+      <h2 id="learnings-h">Learnings &amp; <span>Challenges.</span></h2>
+    </div>
+
+    <h3>Navigating Challenges</h3>
+
+    <div class="challenge-list">
+      <div class="challenge-item">
+        <div class="challenge-num">01 · Technical Resistance</div>
+        <p class="challenge-body">Built a clear case, aligned stakeholders, and secured approval for a new frontend stack.</p>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-num">02 · Regulatory Constraints</div>
+        <p class="challenge-body">Designed within RBI rules while maintaining a polished and modern experience.</p>
+      </div>
+      <div class="challenge-item">
+        <div class="challenge-num">03 · Multi-team Dependencies</div>
+        <p class="challenge-body">Took ownership of communication and decision making to keep the project on track.</p>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- 08. LEADERSHIP IN ACTION -->
+  <section class="section" aria-labelledby="leadership-h">
+    <div class="section-label">08 · Leadership in Action</div>
+    <div class="section-heading">
+      <h2 id="leadership-h">Influencing Technical <span>Decisions.</span></h2>
+    </div>
+
+    <div class="callout">
+      "Let's meet in the middle. You compromise a bit on the experience, and I'll try to build a better stack and see how it goes."
+      <span class="callout-attr">Senior Engineering Stakeholder</span>
+    </div>
+
+    <p>That framing immediately put UX on the backseat. That was not acceptable. For Video KYC, experience was not a nice to have. It was a core market differentiator in a trust-critical product.</p>
+
+    <p>Instead of escalating or debating opinions, I reframed the conversation around four measurable outcomes: <strong>video stability</strong> (real-time performance), <strong>call efficiency</strong> (duration and drop-offs), <strong>conversion</strong> (agent efficiency rates), and <strong>long-term scalability</strong> (tech debt).</p>
+
+    <h3>The Middle Ground</h3>
+
+    <ul class="bullet-list">
+      <li>Retained the existing stack to reduce short-term engineering risk</li>
+      <li>Introduced a component-first architecture on top of it</li>
+      <li>Built new, modular components optimized specifically for Video KYC workflows</li>
+    </ul>
+
+    <h3>Why this mattered</h3>
+
+    <p>The outcome: <strong>protected experience quality</strong> in a trust-critical product, <strong>enabled faster iteration</strong> after launch, <strong>reduced long-term rework</strong>, and proved that design can <strong>influence without authority</strong>.</p>
+  </section>
+
+  <!-- 09. GTM STRATEGY -->
+  <section class="section" aria-labelledby="gtm-h">
+    <div class="section-label">09 · GTM Strategy</div>
+    <div class="section-heading">
+      <h2 id="gtm-h">Driving the GTM Story <span>&amp; Launch Execution.</span></h2>
+    </div>
+
+    <p>Beyond designing the product experience, I took ownership of how Video KYC would be introduced to the market. We were operating under tight deadlines with limited design and marketing bandwidth, so I stepped in to build the launch assets myself and ensure the story was consistent across product and brand.</p>
+
+    <h3>Marketing launch video</h3>
+
+    <p>I initiated and drove the creation of our official Video KYC launch film. I worked closely with Varun and Shubham to shape the narrative, define the visual direction and ensure the video communicated the simplicity and trust that our experience was built on.</p>
+
+    <p>This was not just a production task. It was design leadership ensuring the story we told the world matched the product we had created.</p>
+
+    <div class="yt-wrap">
+      <div class="yt-embed" data-id="SUpwqZJEGfo">
+        <img src="https://img.youtube.com/vi/SUpwqZJEGfo/hqdefault.jpg" alt="Video KYC: Marketing Launch Video" loading="lazy">
+        <div class="yt-play">
+          <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </div>
+      </div>
+      <a class="yt-open-link" href="https://www.youtube.com/watch?v=SUpwqZJEGfo" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a>
+    </div>
+
+    <h3>Website design and build on Framer</h3>
+
+    <p>Due to resource constraints and a hard deadline, I designed and developed the entire Video KYC landing page myself on Framer in two days. This ensured our product had a credible, enterprise-ready presence during sales pitches and customer conversations.</p>
+
+    <a class="site-preview" href="https://www.cashfree.com/video-kyc-solution/" target="_blank" rel="noopener noreferrer">
+      <div class="site-preview-header">
+        <span class="site-preview-url">cashfree.com/video-kyc-solution</span>
+        <span class="site-preview-tag">↗ Open live site</span>
+      </div>
+      <img src="cashfree-vkyc-preview.jpg" alt="Cashfree Video KYC landing page" loading="lazy">
+    </a>
+  </section>
+
+  <!-- 10. ALREADY BUILDING V2 -->
+  <section class="section" aria-labelledby="v2-h">
+    <div class="section-label">10 · Already Building V2</div>
+    <div class="section-heading">
+      <h2 id="v2-h">AI-powered multilingual <span>transcription.</span></h2>
+    </div>
+
+    <p>The next version of Video KYC can unlock more operational efficiency and market expansion. These opportunities came directly from merchant conversations during early sales discovery.</p>
+
+    <div class="convo-block">
+      <div class="convo-label">The Conversation</div>
+      <p class="convo-q">During a discussion with a merchant who was already using a competitor's Video KYC service, we asked a simple question:</p>
+      <p class="convo-highlight">"What can we build that would convince you to switch to Cashfree?"</p>
+      <p class="convo-reply">His answer was immediate:</p>
+      <p class="convo-answer">"Yar mujhe alag alag language speaking waley bandey dhundna aur hire karna padta hain and unko train bhi to ensure business India bhar mein hota rahe."</p>
+      <p class="convo-translation">"I have to find and hire people who speak different languages, and train them too, just to make sure business keeps running across India."</p>
+    </div>
+
+    <p>This was the spark. It pointed directly to the opportunity: language barriers were driving operational cost, training complexity, and slower onboarding across regions. One conversation, one clear problem: <strong>real-time multilingual transcription and translation powered by AI.</strong></p>
+
+    <div class="proto-embed mobile">
+      <div class="proto-header">
+        <span class="proto-header-title">V2 Customer Flow</span>
+        <span class="proto-header-tag">Figma Prototype</span>
+      </div>
+      <iframe
+        src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Fproto%2FaQFLpe28a4SuvctT8m33fK%2FCustomer-Journey-final_dec-2025%3Fnode-id%3D8688-16406%26scaling%3Dscale-down%26content-scaling%3Dfixed%26page-id%3D8517%253A2965%26starting-point-node-id%3D8688%253A16406"
+        title="AI Multilingual KYC Customer Journey: V2 Interactive Prototype"
+        allowfullscreen
+        loading="lazy">
+      </iframe>
+    </div>
+    <a class="proto-open-link" href="https://www.figma.com/proto/aQFLpe28a4SuvctT8m33fK/Customer-Journey-final_dec-2025?node-id=8688-16406&scaling=scale-down&content-scaling=fixed&page-id=8517%3A2965&starting-point-node-id=8688%3A16406" target="_blank" rel="noopener noreferrer">Open fullscreen in Figma ↗</a>
+
+    <h3>What this unlocks</h3>
+
+    <ul class="bullet-list">
+      <li>Agents no longer need to match the customer's native language.</li>
+      <li>Calls become more accessible across Tier 2 and Tier 3 markets.</li>
+      <li>Training time and hiring complexity drop significantly.</li>
+      <li>Merchants expand reach without scaling agent headcount at the same rate.</li>
+      <li>Customer trust increases because they can speak naturally in their language.</li>
+    </ul>
+  </section>
+
+</main>
+
+<div id="pt-overlay"></div>
+<script>
+  document.querySelectorAll('.yt-embed').forEach(function(el) {
+    el.addEventListener('click', function() {
+      window.open('https://www.youtube.com/watch?v=' + el.dataset.id, '_blank', 'noopener,noreferrer');
+    });
+  });
+
+  (function () {
+    var overlay = document.getElementById('pt-overlay');
+    var DUR = 340;
+    var EASE_IN  = 'transform ' + DUR + 'ms cubic-bezier(0.4,0,1,1)';
+    var EASE_OUT = 'transform ' + DUR + 'ms cubic-bezier(0,0,0.2,1)';
+
+    function move(x, trans) {
+      overlay.style.transition = trans || 'none';
+      overlay.style.transform  = 'translateX(' + x + ')';
+    }
+
+    if (sessionStorage.getItem('pt') === 'forward') {
+      sessionStorage.removeItem('pt');
+      move('0%');
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () { move('-100%', EASE_OUT); });
+      });
+    } else {
+      move('100%');
+    }
+
+    var backBtn = document.querySelector('.sticky-nav a');
+    if (backBtn) {
+      backBtn.addEventListener('click', function (e) {
+        var href = backBtn.getAttribute('href');
+        if (!href) return;
+        e.preventDefault();
+        move('-100%');
+        requestAnimationFrame(function () {
+          requestAnimationFrame(function () {
+            overlay.style.pointerEvents = 'all';
+            move('0%', EASE_IN);
+            sessionStorage.setItem('pt', 'back');
+            setTimeout(function () { window.location.href = href; }, DUR);
+          });
+        });
+      });
+    }
+  })();
+</script>
+</body>
+</html>
